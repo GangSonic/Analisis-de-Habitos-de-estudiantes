@@ -1,0 +1,422 @@
+---
+title: "PROYECTO_FINAL"
+author: "JasminHR"
+date: "2025-05-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning= FALSE, message=FALSE)
+
+library(tidyverse)
+library(gapminder)
+library(plotly) 
+
+```
+
+
+## Semana 1: Visaulzacion de datos 
+Carga de datos 
+
+
+
+```{r}
+data <- as_tibble(gapminder)
+```
+
+
+1. Filtrar los datos solo para el año 2007
+
+```{r}
+data_2007 <- data %>% filter(year == 2007)
+
+```
+
+2. Seleccionar las columnas país, continente y esperanza de vida
+
+```{r}
+data_selected <- data %>% select(country, continent, lifeExp)
+
+```
+
+
+3. Renombrar la columna lifeExp a esperanza_vida
+
+```{r}
+data_renamed <- data %>% rename(esperanza_vida = lifeExp)
+
+
+```
+
+4. Ordenar los datos por PIB per cápita de mayor a menor
+
+
+```{r}
+data_sorted <- data %>% arrange(desc(gdpPercap))
+
+
+```
+
+
+5. Agregar una nueva columna con el PIB total (pop * gdpPercap)
+
+```{r}
+data_mutated <- data %>% mutate(PIB_total = pop * gdpPercap)
+
+```
+
+
+6. Reubicar la columna PIB_total al inicio
+
+
+```{r}
+data_relocated <- data_mutated %>% relocate(PIB_total)
+
+```
+
+7. Filtrar países con una esperanza de vida mayor a 70 años
+
+
+```{r}
+data_lifeExp70 <- data %>% filter(lifeExp > 70)
+
+```
+
+
+8. Contar cuántos países hay por continente
+```{r}
+data_continent_count <- data %>% count(continent)
+
+```
+
+9. Agrupar por continente y calcular la media de esperanza de vida
+```{r}
+data_grouped <- data %>% group_by(continent) %>% summarise(media_vida = mean(lifeExp))
+
+```
+ 10. Encontrar el país con la mayor población en 2007
+```{r}
+data_max_pop <- data %>% filter(year == 2007) %>% arrange(desc(pop)) %>% slice(1)
+
+```
+
+11. Convertir los datos de formato ancho a largo
+
+```{r}
+data_long <- data %>% pivot_longer(cols = c(lifeExp, pop, gdpPercap), names_to = "indicador", values_to = "valor")
+
+```
+
+ 12. Convertir los datos largos a formato ancho
+
+```{r}
+data_wide <- data_long %>% pivot_wider(names_from = "indicador", values_from = "valor")
+
+```
+
+
+ 13. Separar la columna país en dos (si tuviera un delimitador "-")
+
+```{r}
+data_separated <- data %>% separate(country, into = c("parte1", "parte2"), sep = "-", extra = "merge", fill = "right")
+
+```
+
+14. Unir dos columnas en una sola (ejemplo con país y continente)
+
+```{r}
+data_united <- data %>% unite("pais_continente", country, continent, sep = " - ")
+
+```
+
+15. Reemplazar valores NA en una columna con la media
+
+```{r}
+data_na_handled <- data %>% mutate(lifeExp = replace_na(lifeExp, mean(lifeExp, na.rm = TRUE)))
+
+```
+
+16. Crear un histograma de la esperanza de vida
+
+```{r}
+ggplot(data, aes(x = lifeExp)) + geom_histogram(binwidth = 5, fill = "blue", alpha = 0.5)
+
+```
+
+17. Crear un diagrama de dispersión de PIB per cápita vs. esperanza de vida
+
+```{r}
+ggplot(data, aes(x = gdpPercap, y = lifeExp)) + geom_point(alpha = 0.5) + scale_x_log10()
+
+```
+
+18. Crear un boxplot de esperanza de vida por continente
+
+```{r}
+ggplot(data, aes(x = continent, y = lifeExp)) + geom_boxplot()
+
+```
+
+ 19. Graficar la tendencia de la esperanza de vida en un país específico a lo largo del tiempo
+```{r}
+data %>% filter(country == "Argentina") %>% ggplot(aes(x = year, y = lifeExp)) + geom_line() + geom_point()
+
+```
+
+ 20. Facetado por continente para visualizar la relación entre PIB per cápita y esperanza de vida
+
+```{r}
+ggplot(data, aes(x = gdpPercap, y = lifeExp)) + geom_point() + facet_wrap(~continent) + scale_x_log10()
+
+```
+
+##SEMANA 2 
+
+**Objetivo del Analisis **
+En la vida estudiantil padecemos de diversos problemas que nos llevan a mejorar o bajar nuestro
+rendimiento académico, por lo que con este framework de dataset se planteó identificar qué
+hábitos o condiciones podrían mejorarse para ayudar a la población estudiantil.
+
+**Pregunta: **
+¿Cuáles son los factores que más influyen en el rendimiento académico de los estudiantes,
+medido por puntaje de exámenes?
+
+**Justificacion: **
+Planeo identificar los hábitos, condiciones psicológicas y factores socioeconómicos que más
+afectan el desempeño académico de los estudiantes. Ya que creo que esta información puede
+ser de utilidad en las escuelas y mejorar sus planes de estudio o ver el rendimiento general de
+los estudiantes para tomar medidas respecto a eso.
+Este dataset si responde a esta pregunta principal, ya que incluye variables muy útiles como:
+ - Hora de estudio y sueño
+-  Niveles de estrés y ansiedad
+- Participaciones extracurriculares
+- Apoyo familiar
+- Nivel socioeconomico
+- Indicadores de desempeño como las calificaciones de los exámenes
+
+Este dataset contiene 80000 registros y es manejable en R, también incluye 20 variables de
+distintos tipos.
+
+**Visualizacion del data set **
+Para esto se debera cargar el .cvs que esta en la carpeta de git hub o en el link anteriormente especificado, una vez descargado usaremos estas lineas para cargarlo en RStudio: 
+
+```{r}
+data <- read.csv("estudiantes_habitos.csv")
+head(data)
+str(data)
+
+```
+
+
+
+##SEMANA 3 
+
+Vista rapida de la estructura
+```{r}
+glimpse(data)
+```
+
+Resumen estadistico 
+
+```{r}
+summary(data)
+
+```
+
+
+##Eliminar NA 
+Verificar si hay NA 
+```{r}
+colSums(is.na(data))
+sum(is.na(data))
+
+```
+
+
+Convertiri varibales  aformato numerico 
+```{r}
+
+str(data)
+data$age <- as.numeric(data$age)
+
+```
+
+
+##Calcular medidas de tendencia central 
+Media 
+```{r}
+media <- mean(data$age, na.rm = TRUE)  # Media aritmética
+
+
+```
+
+
+Mediana 
+```{r}
+
+mediana <- median(data$age, na.rm = TRUE)  # Mediana
+
+```
+
+
+Media recortada 
+```{r}
+media_recortada <- mean(data$age, trim = 0.1)  # Media recortada
+
+
+```
+
+
+Desviacion estandar 
+```{r}
+desviacion_estandar <- sd(data$age, na.rm = TRUE)  # Desviación estándar
+
+
+```
+
+
+Varianza 
+
+```{r}
+
+varianza <- var(data$age, na.rm = TRUE)  # Varianza
+
+```
+
+Tabla de frecuancia -> Agrupar en intervalos 
+```{r}
+tabla_frecuencia <- table(cut(data$age, breaks = 10))  # Agrupar en intervalos
+
+```
+
+
+Frecuencia relativa 
+```{r}
+prop_frecuencia <- prop.table(tabla_frecuencia)  # Frecuencias relativas
+
+```
+
+
+##Visualziacion Avanzada 
+
+**Diagramas de dispercion **
+
+La pregunta es, si hay una relacion con las horas estudiadas y la calificacion obtenida Sin embargo, podemos ver en el grafico una dispersion de datos, lo que epodemos deducir que no hay una relacion entre estas variables. Pero se ve como los datos tienden a subir levemente lo que no dice que entre mas estudien los estudiantes mejor les va. 
+
+
+```{r}
+ggplot(data, aes(x = study_hours_per_day, y = exam_score, color = gender)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  labs(
+    title = "Horas de estudio y calificaciones del examen",
+    x = "Horas de estudio por dia",
+    y = "Calificacion del examen"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    legend.position = "bottom"
+  )
+
+```
+
+**Histograma**
+
+
+Con este grafico se puede interpretar las horas de sueño que tienen los estudiantes respecto a su genero podemos decir que la mayoria de todos los estudiantes duermen bien entre 6 y 8 horas. Y que si bien no son muchos hay que tener presente que hay estudiantes que se desvelan mucho y puede afectar su rendimiento escolar. 
+
+
+```{r}
+ggplot(data, aes(x = sleep_hours, fill = gender)) +
+  geom_histogram(binwidth = 1, position = "dodge", color = "black") +
+  labs(title = "Horas de sueño por género",
+       x = "Horas de sueño",
+       y = "Frecuencia") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    legend.position = "bottom"
+  )
+```
+
+
+
+
+##Semana 4 
+
+**Graficos interactivos **
+
+
+Este gráfico muestra la relación entre las horas de estudio por día y las calificaciones del examen, diferenciando por género.
+
+Cada punto representa a un estudiante, con su número de horas de estudio en el eje X y su calificación en el eje Y.
+
+Los colores indican el género de los estudiantes, lo que permite observar si hay patrones distintos entre géneros.
+
+Dispercion 
+```{r}
+plot <- ggplot(data, aes(x = study_hours_per_day, y = exam_score, color = gender)) +
+  geom_point(size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  labs(
+    title = "Horas de estudio y calificaciones del examen",
+    x = "Horas de estudio por día",
+    y = "Calificación del examen"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    legend.position = "bottom"
+  )
+
+ggplotly(plot)
+
+
+```
+
+
+**Histograma **
+
+
+El histograma muestra la distribución de las horas de sueño entre los estudiantes, separada por género.
+
+```{r}
+plot_hist <- ggplot(data, aes(x = sleep_hours, fill = gender)) +
+  geom_histogram(binwidth = 1, position = "dodge", color = "black") +
+  labs(title = "Horas de sueño por género",
+       x = "Horas de sueño",
+       y = "Frecuencia") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    legend.position = "bottom"
+  )
+
+ggplotly(plot_hist)
+```
+
+
+##SEMANA 4: Coclusiones y publicacion 
+
+
+
+**Principales hallazgos:** El análisis realizado sobre el dataset de hábitos y condiciones de vida de estudiantes ha permitido identificar patrones clave que afectan directamente su desempeño académico. A continuación, se destacan los principales hallazgos:
+
+**Relación positiva entre horas de estudio y rendimiento académico**
+A través del gráfico de dispersión interactivo se observó una tendencia clara: los estudiantes que dedican más horas al estudio diario tienden a obtener mejores calificaciones en los exámenes. Aunque existen casos atípicos, la regresión lineal muestra que esta relación es consistente, lo cual respalda la importancia de fomentar buenos hábitos de estudio.
+
+**Diferencias en hábitos de sueño según el género**
+El histograma interactivo permitió comparar la distribución de las horas de sueño por género. Este análisis puede ser útil para identificar si ciertos grupos presentan mayores niveles de privación de sueño, lo cual podría afectar su rendimiento y bienestar emocional.
+
+**Valor del dataset para la toma de decisiones educativas**
+El dataset incluye variables relevantes como niveles de estrés, ansiedad, participación en actividades extracurriculares, apoyo familiar y nivel socioeconómico, lo cual permite un análisis integral del entorno del estudiante. Con más de 80,000 registros y 20 variables, ofrece una base robusta para hacer inferencias significativas con herramientas como R.
+
+**Reflexion** 
+
+Cada estudiante es un mundo único, influenciado por múltiples factores que van más allá de las calificaciones. Comprender la interacción entre el tiempo dedicado al estudio, el descanso, el apoyo familiar y las condiciones psicológicas nos permite ver la educación desde una perspectiva más humana y personalizada.
+Esto ayuda a generar estrategia educativas que van mas haya de solo estudiar, si no una educacion que realmente se preocupe por el bienestar emocional y a la vez educacional de los niños y adolescentes. Para no solo formar a oersonas inteligentes, si no tambien sanas. 
+
+Enlace del proyecto en GitHub: 
+
+
